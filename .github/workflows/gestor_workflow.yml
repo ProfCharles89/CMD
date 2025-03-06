@@ -53,8 +53,8 @@ jobs:
           git add clientes/
           git commit -m "Actualización de clientes" || echo "No changes to commit"
           git push
-          
-      # Si necesitas subir algún archivo como artefacto, usa la versión v4
+      
+      # Si necesitas guardar algún artefacto, usa v4:
       - name: Upload results
         if: always()
         uses: actions/upload-artifact@v4
