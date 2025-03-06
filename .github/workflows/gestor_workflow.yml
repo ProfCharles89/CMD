@@ -1,0 +1,61 @@
+name: Gestor de Clientes
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      comando:
+        description: 'Comando a ejecutar'
+        required: true
+        default: 'lista'
+        type: choice
+        options:
+          - lista
+          - ver
+          - crear
+          - servicio
+      nombre:
+        description: 'Nombre del cliente'
+        required: false
+      direccion:
+        description: 'Dirección del cliente'
+        required: false
+      telefono:
+        description: 'Teléfono del cliente'
+        required: false
+      servicio:
+        description: 'Servicio del cliente'
+        required: false
+
+jobs:
+  ejecutar-gestor:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout del código
+      uses: actions/checkout@v3
+    
+    - name: Configurar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Ejecutar comando del gestor
+      run: |
+        if [ "${{ github.event.inputs.comando }}" == "lista" ]; then
+          python gestor_clientes.py lista
+        elif [ "${{ github.event.inputs.comando }}" == "ver" ]; then
+          python gestor_clientes.py ver "${{ github.event.inputs.nombre }}"
+        elif [ "${{ github.event.inputs.comando }}" == "crear" ]; then
+          python gestor_clientes.py crear "${{ github.event.inputs.nombre }}" "${{ github.event.inputs.direccion }}" "${{ github.event.inputs.telefono }}" "${{ github.event.inputs.servicio }}"
+        elif [ "${{ github.event.inputs.comando }}" == "servicio" ]; then
+          python gestor_clientes.py servicio "${{ github.event.inputs.nombre }}" "${{ github.event.inputs.servicio }}"
+        else
+          python gestor_clientes.py
+        fi
+    
+    - name: Guardar datos de clientes
+      uses: actions/upload-artifact@v3
+      with:
+        name: datos-clientes
+        path: clientes/
