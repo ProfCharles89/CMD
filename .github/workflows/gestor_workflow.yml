@@ -1,20 +1,18 @@
-name: Gestor de Clientes
+name: Gestor de Clientes Sky
 
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch:
     inputs:
-      comando:
-        description: 'Comando a ejecutar'
+      accion:
+        description: 'Acción a realizar'
         required: true
-        default: 'lista'
+        default: 'listar'
         type: choice
         options:
-          - lista
+          - listar
           - ver
           - crear
-          - servicio
+          - agregar_servicio
       nombre:
         description: 'Nombre del cliente'
         required: false
@@ -25,37 +23,33 @@ on:
         description: 'Teléfono del cliente'
         required: false
       servicio:
-        description: 'Servicio del cliente'
+        description: 'Servicio para el cliente'
         required: false
 
 jobs:
-  ejecutar-gestor:
+  gestionar-clientes:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout del código
-      uses: actions/checkout@v3
-    
-    - name: Configurar Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-    
-    - name: Ejecutar comando del gestor
-      run: |
-        if [ "${{ github.event.inputs.comando }}" == "lista" ]; then
-          python gestor_clientes.py lista
-        elif [ "${{ github.event.inputs.comando }}" == "ver" ]; then
-          python gestor_clientes.py ver "${{ github.event.inputs.nombre }}"
-        elif [ "${{ github.event.inputs.comando }}" == "crear" ]; then
-          python gestor_clientes.py crear "${{ github.event.inputs.nombre }}" "${{ github.event.inputs.direccion }}" "${{ github.event.inputs.telefono }}" "${{ github.event.inputs.servicio }}"
-        elif [ "${{ github.event.inputs.comando }}" == "servicio" ]; then
-          python gestor_clientes.py servicio "${{ github.event.inputs.nombre }}" "${{ github.event.inputs.servicio }}"
-        else
-          python gestor_clientes.py
-        fi
-    
-    - name: Guardar datos de clientes
-      uses: actions/upload-artifact@v3
-      with:
-        name: datos-clientes
-        path: clientes/
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: Ejecutar gestor de clientes
+        run: |
+          python gestor_clientes_sky.py ${{ github.event.inputs.accion }} \
+            --nombre "${{ github.event.inputs.nombre }}" \
+            --direccion "${{ github.event.inputs.direccion }}" \
+            --telefono "${{ github.event.inputs.telefono }}" \
+            --servicio "${{ github.event.inputs.servicio }}"
+        
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add clientes/
+          git commit -m "Actualización de clientes" || echo "No changes to commit"
+          git push
